@@ -605,6 +605,7 @@ void __ipipe_spin_unlock_irqcomplete(unsigned long x)
 	hard_local_irq_restore(x);
 }
 
+
 /* Must be called hw IRQs off. */
 static inline void __ipipe_set_irq_held(struct ipipe_percpu_domain_data *p,
 					unsigned int irq)
