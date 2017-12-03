@@ -541,7 +541,7 @@ static void gic_hold_irq(struct irq_data *d)
 		if (irqd_is_forwarded_to_vcpu(d))
 			gic_poke_irq(d, GICD_ICACTIVER);
 		gic_eoimode1_eoi_irq(d);
-} else
+	} else
 		gic_eoi_irq(d);
 }
 
