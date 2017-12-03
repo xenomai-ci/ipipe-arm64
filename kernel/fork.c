@@ -96,7 +96,6 @@
 #include <linux/thread_info.h>
 #include <ipipe/thread_info.h>
 #include <linux/stackleak.h>
-
 #include <asm/pgtable.h>
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
