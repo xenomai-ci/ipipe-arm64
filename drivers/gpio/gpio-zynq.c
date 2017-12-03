@@ -221,6 +221,7 @@ static int zynq_gpio_get_value(struct gpio_chip *chip, unsigned int pin)
 	u32 data;
 	unsigned int bank_num, bank_pin_num;
 	struct zynq_gpio *gpio = gpiochip_get_data(chip);
+	unsigned long flags;
 
 	zynq_gpio_get_bank_pin(pin, &bank_num, &bank_pin_num, gpio);
 
@@ -612,7 +613,7 @@ static void zynq_gpio_release_irq(struct irq_data *irq_data)
 	struct zynq_gpio *gpio =
 		gpiochip_get_data(irq_data_get_irq_chip_data(irq_data));
 
-device_pin_num = irq_data->hwirq;
+	device_pin_num = irq_data->hwirq;
 	zynq_gpio_get_bank_pin(device_pin_num, &bank_num, &bank_pin_num, gpio);
 	writel_relaxed(BIT(bank_pin_num),
 			gpio->base_addr + ZYNQ_GPIO_INTEN_OFFSET(bank_num));
@@ -626,7 +627,7 @@ static struct irq_chip zynq_gpio_level_irqchip = {
 	.irq_enable	= zynq_gpio_irq_enable,
 	.irq_eoi	= zynq_gpio_irq_ack,
 #ifdef CONFIG_IPIPE
-	.irq_hold		= zynq_gpio_hold_irq,
+	.irq_hold	= zynq_gpio_hold_irq,
 	.irq_release	= zynq_gpio_release_irq,
 #endif
 	.irq_mask	= zynq_gpio_irq_mask,
