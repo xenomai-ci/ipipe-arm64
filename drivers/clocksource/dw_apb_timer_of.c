@@ -40,6 +40,8 @@ static void __init timer_get_base_and_rate(struct device_node *np,
 		reset_control_deassert(rstc);
 	}
 
+	*phys = res.start;
+
 	/*
 	 * Not all implementations use a periphal clock, so don't panic
 	 * if it's not present
