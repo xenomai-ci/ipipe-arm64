@@ -570,7 +570,6 @@ static void __omap_gpio_irq_handler(struct gpio_bank *bank)
 	if (WARN_ON(!isr_reg))
 		return;
 
-
 	if (WARN_ONCE(!pm_runtime_active(bank->chip.parent),
 		      "gpio irq%i while runtime suspended?\n", irq))
 		return IRQ_NONE;
@@ -705,6 +704,19 @@ static void omap_gpio_mask_irq(struct irq_data *d)
 	raw_spin_lock_irqsave(&bank->lock, flags);
 	omap_set_gpio_triggering(bank, offset, IRQ_TYPE_NONE);
 	omap_set_gpio_irqenable(bank, offset, 0);
+	raw_spin_unlock_irqrestore(&bank->lock, flags);
+}
+
+static void omap_gpio_mask_ack_irq(struct irq_data *d)
+{
+	struct gpio_bank *bank = omap_irq_data_get_bank(d);
+	unsigned offset = d->hwirq;
+	unsigned long flags;
+
+	raw_spin_lock_irqsave(&bank->lock, flags);
+	omap_set_gpio_irqenable(bank, offset, 0);
+	omap_set_gpio_triggering(bank, offset, IRQ_TYPE_NONE);
+	omap_clear_gpio_irqstatus(bank, offset);
 	raw_spin_unlock_irqrestore(&bank->lock, flags);
 }
 
