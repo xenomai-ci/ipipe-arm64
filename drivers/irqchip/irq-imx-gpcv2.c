@@ -115,6 +115,9 @@ static void __imx_gpcv2_irq_unmask(struct irq_data *d)
 	val &= ~BIT(d->hwirq % 32);
 	writel_relaxed(val, reg);
 
+	raw_spin_lock_irqsave(&cd->rlock, flags);
+	__imx_gpcv2_irq_unmask(d);
+	raw_spin_unlock_irqrestore(&cd->rlock, flags);
 	irq_chip_unmask_parent(d);
 }
 
@@ -139,8 +142,6 @@ static void __imx_gpcv2_irq_mask(struct irq_data *d)
 	val = readl_relaxed(reg);
 	val |= BIT(d->hwirq % 32);
 	writel_relaxed(val, reg);
-
-	irq_chip_mask_parent(d);
 }
 
 static void imx_gpcv2_irq_mask(struct irq_data *d)
