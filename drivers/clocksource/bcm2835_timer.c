@@ -70,8 +70,7 @@ static void bcm2835_itimer_ack(void)
 	writel(timer->match_mask, timer->control);
 }
 
-static inline void bcm2835_ipipe_evt_setup(struct clock_event_device *evt,
-																int freq)
+static inline void bcm2835_ipipe_evt_setup(struct clock_event_device *evt, int freq)
 {
 	evt->ipipe_timer = &bcm2835_itimer;
 	evt->ipipe_timer->irq = evt->irq;
