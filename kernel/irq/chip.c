@@ -1157,6 +1157,7 @@ int ipipe_enable_irq(unsigned int irq)
 	if (desc == NULL)
 		return -EINVAL;
 
+
 	chip = irq_desc_get_chip(desc);
 
 	if (chip->irq_startup && (desc->istate & IPIPE_IRQS_NEEDS_STARTUP)) {

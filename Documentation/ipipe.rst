@@ -752,10 +752,34 @@ The following kernel areas are involved in interrupt pipelining:
     normally. Otherwise, the CPU is simply denied from entering the
     idle state, leaving the timer hardware enabled.
 
-    ..CAUTION:: If some out-of-band code waiting for an external event
+   ..CAUTION:: If some out-of-band code waiting for an external event
     cannot bear with the latency that might be induced by the default
     architecture-specific CPU idling code, then CPUIDLE is not usable
     and should be disabled at build time.
+    
+    Interrupt pipelining introduces an interesting corner case in the
+    logic of the CPU idle framework: the kernel might be idle in the
+    sense that no in-band activity is scheduled yet, and at the same
+    time, some out-of-band code might wait for a tick event already
+    programmed in the timer hardware controlled by some out-of-band
+    code via the timer_ interposition mechanism.
+
+    In that situation, we don't want the CPUIDLE logic to turn off the
+    hardware timer, causing the pending out-of-band event to be
+    lost. Since the in-band kernel code does not know about the
+    out-of-band context plans in essence, CPUIDLE calls
+    :c:func:`ipipe_enter_idle_hook` to figure out whether the
+    out-of-band system is fine with entering the idle state as well.
+    Conversely, the CPUIDLE logic invokes :c:func:`ipipe_exit_idle_hook`
+    to inform the out-of-band code when the idle state ends. Both
+    routines should be overriden by the out-of-band code for receiving
+    these notifications (*__weak* binding).
+
+    If :c:func:`ipipe_enter_idle_hook` returns a boolean *true* value,
+    CPUIDLE proceeds as normally and may turn off the per-CPU timer
+    hardware if the *C3STOP* misfeature is detected there. Otherwise,
+    the CPU is simply denied from entering the idle state, leaving the
+    timer hardware enabled.
 
   * Kernel preemption control (PREEMPT)
 

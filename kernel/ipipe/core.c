@@ -870,7 +870,7 @@ static inline int __ipipe_next_irq(struct ipipe_percpu_domain_data *p)
 	return irq;
 }
 
-#else /* __IPIPE_IRQMAP_LEVELS == 2 */
+#else /* __IPIPE_2LEVEL_IRQMAP */
 
 /* Must be called hw IRQs off. */
 void __ipipe_set_irq_pending(struct ipipe_domain *ipd, unsigned int irq)
@@ -1976,7 +1976,6 @@ void ipipe_prepare_panic(void)
 #ifdef CONFIG_PRINTK
 	__ipipe_printk_bypass = 1;
 #endif
-	ipipe_context_check_off();
 }
 EXPORT_SYMBOL_GPL(ipipe_prepare_panic);
 
