@@ -418,7 +418,11 @@ tsk	.req	x28		// current thread_info
  * Interrupt handling.
  */
 	.macro	irq_handler
+#ifdef CONFIG_IPIPE
+	ldr	x1, =handle_arch_irq_pipelined
+#else
 	ldr_l	x1, handle_arch_irq
+#endif
 	mov	x0, sp
 	irq_stack_entry
 	blr	x1
@@ -663,12 +667,18 @@ el1_irq:
 1:
 #endif
 
-#ifdef CONFIG_TRACE_IRQFLAGS
+#if defined(CONFIG_TRACE_IRQFLAGS) && !defined(CONFIG_IPIPE)
 	bl	trace_hardirqs_off
 #endif
 
 	irq_handler
 
+#ifdef CONFIG_IPIPE
+	cbz     w0, 2f
+#ifdef CONFIG_TRACE_IRQFLAGS
+	bl	trace_hardirqs_off
+#endif
+#endif
 #ifdef CONFIG_PREEMPT
 	ldr	x24, [tsk, #TSK_TI_PREEMPT]	// get preempt count
 alternative_if ARM64_HAS_IRQ_PRIO_MASKING
@@ -705,8 +715,22 @@ alternative_else_nop_endif
 1:
 #endif
 
+2:
 	kernel_exit 1
 ENDPROC(el1_irq)
+
+#ifdef CONFIG_PREEMPT
+el1_preempt:
+	mov	x24, lr
+#ifdef CONFIG_IPIPE
+1:	bl	__ipipe_preempt_schedule_irq
+#else
+1:	bl	preempt_schedule_irq		// irq en/disable is done inside
+#endif
+	ldr	x0, [tsk, #TSK_TI_FLAGS]	// get new tasks TI_FLAGS
+	tbnz	x0, #TIF_NEED_RESCHED, 1b	// needs rescheduling?
+	ret	x24
+#endif
 
 /*
  * EL0 mode handlers.
@@ -929,8 +953,7 @@ el0_irq_naked:
 	gic_prio_irq_setup pmr=x20, tmp=x0
 	ct_user_exit_irqoff
 	enable_da_f
-
-#ifdef CONFIG_TRACE_IRQFLAGS
+#if defined(CONFIG_TRACE_IRQFLAGS) && !defined(CONFIG_IPIPE)
 	bl	trace_hardirqs_off
 #endif
 
@@ -941,10 +964,13 @@ el0_irq_naked:
 #endif
 	irq_handler
 
+#ifdef CONFIG_IPIPE
+	cbz	w0, work_done
+#endif	/* CONFIG_IPIPE */
 #ifdef CONFIG_TRACE_IRQFLAGS
 	bl	trace_hardirqs_on
 #endif
-	b	ret_to_user
+	b	ret_to_user_nocheck
 ENDPROC(el0_irq)
 
 el1_error:
@@ -980,14 +1006,24 @@ work_pending:
 #ifdef CONFIG_TRACE_IRQFLAGS
 	bl	trace_hardirqs_on		// enabled while in userspace
 #endif
+work_done:
 	ldr	x1, [tsk, #TSK_TI_FLAGS]	// re-check for single-step
 	b	finish_ret_to_user
 /*
  * "slow" syscall return path.
  */
 ret_to_user:
+#ifdef CONFIG_IPIPE
+	disable_daif
+	ldr	x0, [tsk, #TSK_TI_IPIPE]
+	tst	x0, #_TIP_HEAD
+	b.eq	ret_to_user_noirq
+	kernel_exit 0
+#endif
+ret_to_user_nocheck:
 	disable_daif
 	gic_prio_kentry_setup tmp=x3
+ret_to_user_noirq:
 	ldr	x1, [tsk, #TSK_TI_FLAGS]
 	and	x2, x1, #_TIF_WORK_MASK
 	cbnz	x2, work_pending
@@ -1163,6 +1199,9 @@ NOKPROBE(cpu_switch_to)
  * This is how we return from a fork.
  */
 ENTRY(ret_from_fork)
+#ifdef CONFIG_IPIPE
+	enable_irq
+#endif	
 	bl	schedule_tail
 	cbz	x19, 1f				// not a kernel thread
 	mov	x0, x20

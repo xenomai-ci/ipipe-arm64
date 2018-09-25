@@ -18,6 +18,7 @@
 #include <linux/kasan-checks.h>
 #include <linux/string.h>
 
+#include <asm-generic/ipipe.h>
 #include <asm/cpufeature.h>
 #include <asm/ptrace.h>
 #include <asm/memory.h>
@@ -299,8 +300,8 @@ do {									\
 #define __get_user_error(x, ptr, err)					\
 do {									\
 	__typeof__(*(ptr)) __user *__p = (ptr);				\
-	might_fault();							\
-	if (access_ok(__p, sizeof(*__p))) {				\
+	__ipipe_uaccess_might_fault();					\
+	if (access_ok(VERIFY_READ, __p, sizeof(*__p))) {		\
 		__p = uaccess_mask_ptr(__p);				\
 		__raw_get_user((x), __p, (err));			\
 	} else {							\
@@ -362,8 +363,8 @@ do {									\
 #define __put_user_error(x, ptr, err)					\
 do {									\
 	__typeof__(*(ptr)) __user *__p = (ptr);				\
-	might_fault();							\
-	if (access_ok(__p, sizeof(*__p))) {				\
+	__ipipe_uaccess_might_fault();					\
+	if (access_ok(VERIFY_WRITE, __p, sizeof(*__p))) {		\
 		__p = uaccess_mask_ptr(__p);				\
 		__raw_put_user((x), __p, (err));			\
 	} else	{							\

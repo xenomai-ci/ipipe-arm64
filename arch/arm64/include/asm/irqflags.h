@@ -9,6 +9,10 @@
 #include <asm/ptrace.h>
 #include <asm/sysreg.h>
 
+#include <asm/ipipe_hwirq.h>
+
+#ifndef CONFIG_IPIPE
+
 /*
  * Aarch64 has flags for masking: Debug, Asynchronous (serror), Interrupts and
  * FIQ exceptions, in the 'daif' register. We mask and unmask them in 'dai'
@@ -126,4 +130,6 @@ static inline void arch_local_irq_restore(unsigned long flags)
 		: "memory");
 }
 
-#endif /* __ASM_IRQFLAGS_H */
+#endif /* !IPIPE */
+
+#endif
