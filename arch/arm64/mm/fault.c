@@ -401,6 +401,9 @@ static void do_bad_area(unsigned long addr, unsigned int esr, struct pt_regs *re
 	const struct fault_info *inf;
 	unsigned long irqflags;
 
+	if (__ipipe_report_trap(IPIPE_TRAP_ACCESS, regs))
+		return;
+
 	/*
 	 * If we are in kernel mode at this point, we have no context to
 	 * handle this fault with.
@@ -472,6 +475,9 @@ static int __kprobes do_page_fault(unsigned long addr, unsigned int esr,
 	int fault, sig, code, major = 0;
 	unsigned long vm_flags = VM_READ | VM_WRITE, irqflags;
 	unsigned int mm_flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
+
+	if (__ipipe_report_trap(IPIPE_TRAP_ACCESS, regs))
+		return 0;
 
 	irqflags = fault_entry(regs);
 
