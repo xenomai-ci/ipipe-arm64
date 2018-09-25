@@ -745,6 +745,8 @@ static void do_signal(struct pt_regs *regs)
 asmlinkage void do_notify_resume(struct pt_regs *regs,
 				 unsigned int thread_flags)
 {
+	bool stalled = irqs_disabled();
+
 	/*
 	 * The assembly code enters us with IRQs off, but it hasn't
 	 * informed the tracing code of that for efficiency reasons.
@@ -757,9 +759,13 @@ asmlinkage void do_notify_resume(struct pt_regs *regs,
 		addr_limit_user_check();
 
 		if (thread_flags & _TIF_NEED_RESCHED) {
+			if (IS_ENABLED(CONFIG_IPIPE)) {
+				local_irq_disable();
+				hard_local_irq_enable();
+			}
 			schedule();
 		} else {
-			local_irq_enable();
+			local_irq_enable(); /* also hard enables IRQs */
 
 			if (thread_flags & _TIF_UPROBE)
 				uprobe_notify_resume(regs);
@@ -776,7 +782,10 @@ asmlinkage void do_notify_resume(struct pt_regs *regs,
 				fpsimd_restore_current_state();
 		}
 
-		local_irq_disable();
+		hard_local_irq_disable();
 		thread_flags = READ_ONCE(current_thread_info()->flags);
 	} while (thread_flags & _TIF_WORK_MASK);
+
+	if (IS_ENABLED(CONFIG_IPIPE) && stalled)
+		local_irq_disable();
 }
