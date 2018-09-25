@@ -152,10 +152,8 @@ void arch_cpu_idle(void)
 	 * tricks
 	 */
 	trace_cpu_idle_rcuidle(1, smp_processor_id());
-	if (!need_resched())
-		__ipipe_halt_root();
 	cpu_do_idle();
-	local_irq_enable();
+	local_irq_enable_full();
 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
 }
 
