@@ -281,7 +281,7 @@ void arm64_skip_faulting_instruction(struct pt_regs *regs, unsigned long size)
 }
 
 static LIST_HEAD(undef_hook);
-static DEFINE_RAW_SPINLOCK(undef_lock);
+static IPIPE_DEFINE_RAW_SPINLOCK(undef_lock);
 
 void register_undef_hook(struct undef_hook *hook)
 {
@@ -400,6 +400,9 @@ asmlinkage void __exception do_undefinstr(struct pt_regs *regs)
 		return;
 
 	if (call_undef_hook(regs) == 0)
+		return;
+
+	if (__ipipe_report_trap(IPIPE_TRAP_UNDEFINSTR, regs))
 		return;
 
 	BUG_ON(!user_mode(regs));
@@ -805,6 +808,15 @@ asmlinkage void bad_mode(struct pt_regs *regs, int reason, unsigned int esr)
 asmlinkage void bad_el0_sync(struct pt_regs *regs, int reason, unsigned int esr)
 {
 	void __user *pc = (void __user *)instruction_pointer(regs);
+
+	if (__ipipe_report_trap(IPIPE_TRAP_UNKNOWN, regs))
+		return;
+
+	clear_siginfo(&info);
+	info.si_signo = SIGILL;
+	info.si_errno = 0;
+	info.si_code  = ILL_ILLOPC;
+	info.si_addr  = pc;
 
 	current->thread.fault_address = 0;
 	current->thread.fault_code = esr;
