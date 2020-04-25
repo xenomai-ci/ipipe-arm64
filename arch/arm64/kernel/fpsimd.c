@@ -1105,9 +1105,8 @@ void fpsimd_restore_current_state(void)
 	 * FPSTATE is clean (as we can't have one) to avoid looping for ever in
 	 * do_notify_resume().
 	 */
-	if (!system_supports_fpsimd())
+	if (!system_supports_fpsimd()) 
 		return;
-	}
 
 	fpsimd_enter_atomic(flags);
 
