@@ -132,7 +132,7 @@ retry:
 	} else if (old == cpu) {
 		was_locked = 1;
 	} else {
-		local_irq_restore(flags);
+		restore_local_irqs(flags);
 		/*
 		 * Wait for the lock to release before jumping to
 		 * atomic_cmpxchg() in order to mitigate the thundering herd
