@@ -248,8 +248,8 @@ static void sve_free(struct task_struct *task)
  */
 static void task_fpsimd_load(void)
 {
-	WARN_ON(!hard_irqs_disabled() && !in_softirq() && !irqs_disabled());
 	WARN_ON(!system_supports_fpsimd());
+	WARN_ON(!hard_irqs_disabled() && !in_softirq() && !irqs_disabled());
 
 	if (system_supports_sve() && test_thread_flag(TIF_SVE))
 		sve_load_state(sve_pffr(&current->thread),
@@ -1071,9 +1071,7 @@ static void __fpsimd_bind_state_to_cpu(struct user_fpsimd_state *st)
 	struct fpsimd_last_state_struct *last =
 		this_cpu_ptr(&fpsimd_last_state);
 
-	if(!system_supports_fpsimd()) {
-		return;
-	}
+	WARN_ON(!system_supports_fpsimd());
 	last->st = st;
 }
 
@@ -1105,8 +1103,9 @@ void fpsimd_restore_current_state(void)
 	 * FPSTATE is clean (as we can't have one) to avoid looping for ever in
 	 * do_notify_resume().
 	 */
-	if (!system_supports_fpsimd()) 
-		return;
+	if (!system_supports_fpsimd()) {
+		clear_thread_flag(TIF_FOREIGN_FPSTATE);
+	}
 
 	fpsimd_enter_atomic(flags);
 
@@ -1127,7 +1126,7 @@ void fpsimd_update_current_state(struct user_fpsimd_state const *state)
 {
 	unsigned long flags;
 	
-	if (!system_supports_fpsimd())
+	if (WARN_ON(!system_supports_fpsimd()))
 		return;
 
 	fpsimd_enter_atomic(flags);
