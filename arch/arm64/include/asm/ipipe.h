@@ -82,7 +82,7 @@ static inline void __ipipe_mach_update_tsc(void) {}
 
 static inline notrace unsigned long long __ipipe_mach_get_tsc(void)
 {
-	return arch_counter_get_cntvct();
+	return __arch_counter_get_cntvct();
 }
 
 #define __ipipe_tsc_get() __ipipe_mach_get_tsc()

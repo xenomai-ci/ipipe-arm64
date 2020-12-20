@@ -301,7 +301,7 @@ do {									\
 do {									\
 	__typeof__(*(ptr)) __user *__p = (ptr);				\
 	__ipipe_uaccess_might_fault();					\
-	if (access_ok(VERIFY_READ, __p, sizeof(*__p))) {		\
+	if (access_ok(__p, sizeof(*__p))) {		\
 		__p = uaccess_mask_ptr(__p);				\
 		__raw_get_user((x), __p, (err));			\
 	} else {							\
@@ -364,7 +364,7 @@ do {									\
 do {									\
 	__typeof__(*(ptr)) __user *__p = (ptr);				\
 	__ipipe_uaccess_might_fault();					\
-	if (access_ok(VERIFY_WRITE, __p, sizeof(*__p))) {		\
+	if (access_ok(__p, sizeof(*__p))) {		\
 		__p = uaccess_mask_ptr(__p);				\
 		__raw_put_user((x), __p, (err));			\
 	} else	{							\

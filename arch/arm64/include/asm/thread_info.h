@@ -126,5 +126,4 @@ void arch_release_task_struct(struct task_struct *tsk);
 #define _TIP_HEAD	(1 << TIP_HEAD)
 #define _TIP_USERINTRET	(1 << TIP_USERINTRET)
 
-#endif /* __KERNEL__ */
 #endif /* __ASM_THREAD_INFO_H */
