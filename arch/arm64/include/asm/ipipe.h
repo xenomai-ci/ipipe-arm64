@@ -120,9 +120,6 @@ static inline const char *ipipe_clock_name(void)
 
 /* Private interface -- Internal use only */
 
-#define __ipipe_enable_irq(irq)		enable_irq(irq)
-#define __ipipe_disable_irq(irq)	disable_irq(irq)
-
 #define ipipe_notify_root_preemption() do { } while(0)
 
 #ifdef CONFIG_SMP

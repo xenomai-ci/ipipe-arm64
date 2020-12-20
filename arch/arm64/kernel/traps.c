@@ -812,12 +812,6 @@ asmlinkage void bad_el0_sync(struct pt_regs *regs, int reason, unsigned int esr)
 	if (__ipipe_report_trap(IPIPE_TRAP_UNKNOWN, regs))
 		return;
 
-	clear_siginfo(&info);
-	info.si_signo = SIGILL;
-	info.si_errno = 0;
-	info.si_code  = ILL_ILLOPC;
-	info.si_addr  = pc;
-
 	current->thread.fault_address = 0;
 	current->thread.fault_code = esr;
 

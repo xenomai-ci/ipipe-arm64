@@ -1236,9 +1236,6 @@ NOKPROBE(cpu_switch_to)
  * This is how we return from a fork.
  */
 ENTRY(ret_from_fork)
-#ifdef CONFIG_IPIPE
-	enable_irq
-#endif	
 	bl	schedule_tail
 	cbz	x19, 1f				// not a kernel thread
 	mov	x0, x20
