@@ -122,7 +122,6 @@ static inline void fault_exit(unsigned long x) { }
 
 #endif	/* !CONFIG_IPIPE */
 
-#ifdef CONFIG_KPROBES
 static void data_abort_decode(unsigned int esr)
 {
 	pr_alert("Data abort info:\n");
@@ -698,7 +697,7 @@ retry:
 	}
 
 out:
-	fault_exit(regs, irqflags);
+	fault_exit(irqflags);
 
 	return 0;
 

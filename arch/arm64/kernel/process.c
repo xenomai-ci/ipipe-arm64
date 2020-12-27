@@ -112,36 +112,6 @@ void cpu_do_idle(void)
 		__cpu_do_idle();
 }
 
-#ifdef CONFIG_IPIPE
-static void __ipipe_halt_root(void)
-{
-	struct ipipe_percpu_domain_data *p;
-
-	/*
-	 * Emulate idle entry sequence over the root domain, which is
-	 * stalled on entry.
-	 */
-	hard_local_irq_disable();
-
-	p = ipipe_this_cpu_root_context();
-	__clear_bit(IPIPE_STALL_FLAG, &p->status);
-
-	if (unlikely(__ipipe_ipending_p(p)))
-		__ipipe_sync_stage();
-	else {
-		cpu_do_idle();
-	}
-}
-
-#else /* !CONFIG_IPIPE */
-
-static void __ipipe_halt_root(void)
-{
-	cpu_do_idle();
-}
-
-#endif /* !CONFIG_IPIPE */
-
 /*
  * This is our default idle handler.
  */
