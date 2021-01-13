@@ -4428,7 +4428,8 @@ asmlinkage __visible void __sched preempt_schedule_irq(void)
 	enum ctx_state prev_state;
 
 	/* Catch callers which need to be fixed */
-	BUG_ON(preempt_count() || !irqs_disabled());
+	if (likely(!preemptible() || !ipipe_root_p || hard_irqs_disabled()))
+		return;
 
 	prev_state = exception_enter();
 
