@@ -799,21 +799,10 @@ static void __arch_timer_setup(unsigned type,
 	clk->features = CLOCK_EVT_FEAT_ONESHOT;
 
 	if (type == ARCH_TIMER_TYPE_CP15) {
+		printk(KERN_ERR "arch timer type cp15\n");
 		typeof(clk->set_next_event) sne;
 
 		arch_timer_check_ool_workaround(ate_match_local_cap_id, NULL);
-
-#ifdef CONFIG_IPIPE
-		clk->ipipe_timer = raw_cpu_ptr(&arch_itimer);
-		if (arch_timer_uses_ppi == ARCH_TIMER_VIRT_PPI) {
-			clk->ipipe_timer->irq = arch_timer_ppi[ARCH_TIMER_VIRT_PPI];
-			clk->ipipe_timer->ack = arch_itimer_ack_virt;
-		} else {
-			clk->ipipe_timer->irq = arch_timer_ppi[ARCH_TIMER_PHYS_SECURE_PPI];
-			clk->ipipe_timer->ack = arch_itimer_ack_phys;
-		}
-		clk->ipipe_timer->freq = arch_timer_rate;
-#endif
 
 		if (arch_timer_c3stop)
 			clk->features |= CLOCK_EVT_FEAT_C3STOP;
@@ -838,10 +827,7 @@ static void __arch_timer_setup(unsigned type,
 			BUG();
 		}
 
-
-
-
-		arch_timer_check_ool_workaround(ate_match_local_cap_id, NULL);
+		clk->set_next_event = sne;
 #ifdef CONFIG_IPIPE
 		clk->ipipe_timer = raw_cpu_ptr(&arch_itimer);
 		if (arch_timer_uses_ppi == ARCH_TIMER_VIRT_PPI) {
@@ -853,7 +839,6 @@ static void __arch_timer_setup(unsigned type,
 		}
 		clk->ipipe_timer->freq = arch_timer_rate;
 #endif
-
 	} else {
 		clk->features |= CLOCK_EVT_FEAT_DYNIRQ;
 		clk->name = "arch_mem_timer";
@@ -1172,10 +1157,15 @@ static int __init arch_timer_register(void)
 		break;
 	case ARCH_TIMER_PHYS_SECURE_PPI:
 	case ARCH_TIMER_PHYS_NONSECURE_PPI:
+		printk(KERN_ERR "NONSECURE_PPI %x\n", arch_timer_uses_ppi);
 		err = request_percpu_irq(ppi, arch_timer_handler_phys,
 					 "arch_timer", arch_timer_evt);
+		
+		printk(KERN_ERR "err %d\n", err);
 		if (!err && arch_timer_has_nonsecure_ppi()) {
 			ppi = arch_timer_ppi[ARCH_TIMER_PHYS_NONSECURE_PPI];
+			
+			printk(KERN_ERR "request percpu irq\n");
 			err = request_percpu_irq(ppi, arch_timer_handler_phys,
 						 "arch_timer", arch_timer_evt);
 			if (err)
