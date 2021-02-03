@@ -107,6 +107,7 @@ static int imx_gpcv2_irq_set_wake(struct irq_data *d, unsigned int on)
 static void __imx_gpcv2_irq_unmask(struct irq_data *d)
 {
 	struct gpcv2_irqchip_data *cd = d->chip_data;
+	unsigned long flags;
 	void __iomem *reg;
 	u32 val;
 
