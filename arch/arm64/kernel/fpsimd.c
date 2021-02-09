@@ -248,9 +248,10 @@ static void sve_free(struct task_struct *task)
  */
 static void task_fpsimd_load(void)
 {
-	WARN_ON(!hard_irqs_disabled() && !in_softirq() && !irqs_disabled());
-	WARN_ON(!system_supports_fpsimd());
 	
+	WARN_ON(!system_supports_fpsimd());
+	WARN_ON(!hard_irqs_disabled() && !in_softirq() && !irqs_disabled());
+
 	if (system_supports_sve() && test_thread_flag(TIF_SVE))
 		sve_load_state(sve_pffr(&current->thread),
 			       &current->thread.uw.fpsimd_state.fpsr,
@@ -1093,9 +1094,7 @@ void fpsimd_bind_state_to_cpu(struct user_fpsimd_state *st)
  */
 void fpsimd_restore_current_state(void)
 {
-	
 	unsigned long flags;
-	
 	/*
 	 * For the tasks that were created before we detected the absence of
 	 * FP/SIMD, the TIF_FOREIGN_FPSTATE could be set via fpsimd_thread_switch(),
@@ -1107,9 +1106,7 @@ void fpsimd_restore_current_state(void)
 	 */
 	if (!system_supports_fpsimd()) {
 		clear_thread_flag(TIF_FOREIGN_FPSTATE);
-		return;
 	}
-	
 	fpsimd_enter_atomic(flags);
 
 	if (test_and_clear_thread_flag(TIF_FOREIGN_FPSTATE)) {
@@ -1128,7 +1125,7 @@ void fpsimd_restore_current_state(void)
 void fpsimd_update_current_state(struct user_fpsimd_state const *state)
 {
 	unsigned long flags;
-
+	
 	if (WARN_ON(!system_supports_fpsimd()))
 		return;
 
