@@ -37,7 +37,8 @@ static bool __maybe_unused
 is_affected_midr_range_list(const struct arm64_cpu_capabilities *entry,
 			    int scope)
 {
-	WARN_ON(scope != SCOPE_LOCAL_CPU || preemptible());
+	WARN_ON(scope != SCOPE_LOCAL_CPU ||
+		(preemptible() && !IS_ENABLED(CONFIG_IPIPE)));
 	return is_midr_in_range_list(read_cpuid_id(), entry->midr_range_list);
 }
 

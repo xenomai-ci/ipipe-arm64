@@ -517,9 +517,9 @@ static void erratum_1418040_thread_switch(struct task_struct *next)
 
 static void erratum_1418040_new_exec(void)
 {
-	preempt_disable();
+	unsigned long flags = hard_preempt_disable();
 	erratum_1418040_thread_switch(current);
-	preempt_enable();
+	hard_preempt_enable(flags);
 }
 
 /*

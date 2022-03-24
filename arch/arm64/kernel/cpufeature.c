@@ -2023,7 +2023,8 @@ static void __init mark_const_caps_ready(void)
 
 bool this_cpu_has_cap(unsigned int n)
 {
-	if (!WARN_ON(preemptible()) && n < ARM64_NCAPS) {
+	if (!WARN_ON(!IS_ENABLED(CONFIG_IPIPE) && preemptible()) &&
+	    n < ARM64_NCAPS) {
 		const struct arm64_cpu_capabilities *cap = cpu_hwcaps_ptrs[n];
 
 		if (cap)
